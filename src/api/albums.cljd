@@ -1,0 +1,10 @@
+(ns api.albums
+  (:require
+   ["dart:core" :as dc]
+   ["package:http/http.dart" :as http]))
+
+(def ^:private base-url "https://jsonplaceholder.typicode.com/")
+
+(defn get-album 
+  ([] (http/get (dc/Uri.parse (str base-url "albums"))))
+  ([page] (http/get (dc/Uri.parse (str base-url "albums/" page)))))

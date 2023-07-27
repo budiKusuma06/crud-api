@@ -1,0 +1,10 @@
+(ns api.routes
+  (:require ["package:flutter/material.dart" :as m]
+            [cljd.flutter :as f]))
+
+(defn navigate [navigator page name]
+  (.push
+   navigator (#/(m/MaterialPageRoute Object)
+              .settings (m/RouteSettings .name name)
+              .builder
+              (f/build page))))

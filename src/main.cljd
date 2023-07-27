@@ -1,0 +1,43 @@
+(ns main
+  (:require
+   [api.routes :as routes]
+   [api.albums :as albums]
+   [pages.album_detail :as album-detail]
+   ["package:flutter/material.dart" :as m]
+   ["package:http/http.dart" :as http]
+   ["dart:convert" :as c]
+   [cljd.flutter :as f]))
+
+(defn- build-list-items [body]
+  (f/widget
+   :get [m/Navigator]
+   (m/ListView.builder
+    .itemCount (count body)
+    .itemBuilder
+    (f/build
+     #_{:clj-kondo/ignore [:unresolved-symbol]}
+     [idx]
+     (let [album (get-in body #_{:clj-kondo/ignore [:unresolved-symbol]} [idx])] 
+       (m/ListTile
+        .onTap (fn [] (routes/navigate navigator
+                                      (album-detail/view album)
+                                      (str "/album-detail/" (get album "id"))))
+        .title (m/Text (get album "title"))))))))
+
+(defn main []
+  (f/run
+   (m/MaterialApp
+    .debugShowCheckedModeBanner false
+    .theme (m/ThemeData .primarySwatch m/Colors.blue))
+   .home
+   (m/Scaffold .appBar (m/AppBar .title (m/Text "")))
+   .body 
+   :watch [response (albums/get-album)]
+   m/Center
+   (m/Column
+    .children [(if-some [{sc .-statusCode body .-body} ^http/Response response]
+                 (case sc
+                   200 (m/Expanded
+                        .child (build-list-items (c/json.decode body)))
+                   (m/Text (str "Something wrong happened, status code: " sc)))
+                 (m/CircularProgressIndicator))])))
